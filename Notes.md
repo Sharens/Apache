@@ -205,7 +205,7 @@ my $cgi = CGI->new();
 
 # Tablica znaków i ich kody ASCII
 my @chars = ('A'..'Z', 'a'..'z', '0'..'9', '+', '/');
-my %ascii_codes = map { $_ => ord($_) } @chars;
+my %ascii_codes = map { $_ =ord($_) } @chars;
 
 # Wypisz tablicę znaków i ich kody ASCII
 print $cgi->header('text/html');
@@ -217,7 +217,7 @@ foreach my $char (@chars) {
 print "</body></html>\n";
 ```
 ### Wyjaśnienie: 
-> Ten skrypt definiuje tablicę znaków i ich kody ASCII za pomocą map() i hashu %ascii_codes. Następnie wykorzystuje pętlę foreach do wyświetlenia każdego znaku i jego kodu ASCII w formacie HTML.
+Ten skrypt definiuje tablicę znaków i ich kody ASCII za pomocą map() i hashu %ascii_codes. Następnie wykorzystuje pętlę foreach do wyświetlenia każdego znaku i jego kodu ASCII w formacie HTML.
 
 3. Zmień uprawnienia na pliku `chmod 755 ascii.cgi`
 4. Przetestuj skrypt na adresie `http://localhost:8080/cgi-bin/ascii.cgi`
@@ -263,7 +263,7 @@ print "</tr>\n";
 for (my $row = 0; $row < 6; $row++) {
   print "<tr>\n";
   for (my $col = 0; $col < 7; $col++) {
-    if (($row == 0 && $col < $wday) || ($mday > $last_day)) {
+    if (($row == 0 && $col < $wday) || ($mday $last_day)) {
       print "<td></td>\n";
     } else {
       print "<td>$mday</td>\n";
@@ -277,20 +277,20 @@ print "</body></html>\n";
 ```
 
 ### Wyjaśnienie
-> - `use CGI;` - zaimportowanie modułu CGI, który umożliwia tworzenie skryptów CGI w Perl.
-> - `use Time::Local;` - zaimportowanie modułu Time::Local, który zawiera funkcje do pracy z czasem.
-> - `my $cgi = CGI->new();` - utworzenie nowego obiektu CGI.
-> - `my $month = $cgi->param('month');` - pobranie wartości parametru "month" z linii adresu.
-> - `my $year = $cgi->param('year');` - pobranie wartości parametru "year" z linii adresu.
-> - `my $time = timelocal(0, 0, 0, 1, $month - 1, $year - 1900);` - utworzenie obiektu `Time::Local` dla pierwszego dnia danego miesiąca. Funkcja `timelocal()` zwraca ilość sekund od 1 stycznia 1970 do danego momentu w czasie, czyli do pierwszego dnia podanego miesiąca.
-> - `my ($sec, $min, $hour, $mday, $wday) = localtime($time);` - pobranie informacji o czasie z wykorzystaniem funkcji `localtime()`. Zwrócone wartości to: sekundy, minuty, godziny, dzień miesiąca i dzień tygodnia (0 - niedziela, 1 - poniedziałek, itd.).
-> - `$wday = ($wday + 6) % 7;` - ustalenie dnia tygodnia pierwszego dnia danego miesiąca. Dodanie 6 do wartości $wday zapewnia, że niedziela zostanie zmapowana na 0, ponieważ reszta z dzielenia przez 7 jest równa 0.
-> - `my $last_day = (localtime(timelocal(0, 0, 0, 1, $month, $year - 1900) - 86400))[3];` - obliczenie ilości dni w danym miesiącu. Funkcja localtime() zwraca informacje o czasie w postaci tablicy, a `[3]` oznacza dzień miesiąca.
-> - `print $cgi->header('text/html');` - wygenerowanie nagłówka HTTP.
-> - `print "<html><body>\n";` - otwarcie znacznika <html> i <body>.
-> - `print "<h1>Kalendarz dla $month/$year</h1>\n";` - wygenerowanie nagłówka z informacją o wyświetlanym miesiącu.
-> - `print "<table border=\"1\">\n";` - otwarcie znacznika <table> z atrybutem `border="1"`.
-> - `print "<th>Nd</th><th>Pn</th><th>Wt</th><th>Sr</th><th>Cz</th><th>Pt</th><th>So</th>\n";` - wygenerowanie nagłówków kolumn tabeli.
+- `use CGI;` - zaimportowanie modułu CGI, który umożliwia tworzenie skryptów CGI w Perl.
+- `use Time::Local;` - zaimportowanie modułu Time::Local, który zawiera funkcje do pracy z czasem.
+- `my $cgi = CGI->new();` - utworzenie nowego obiektu CGI.
+- `my $month = $cgi->param('month');` - pobranie wartości parametru "month" z linii adresu.
+- `my $year = $cgi->param('year');` - pobranie wartości parametru "year" z linii adresu.
+- `my $time = timelocal(0, 0, 0, 1, $month - 1, $year - 1900);` - utworzenie obiektu `Time::Local` dla pierwszego dnia danego miesiąca. Funkcja `timelocal()` zwraca ilość sekund od 1 stycznia 1970 do danego momentu w czasie, czyli do pierwszego dnia podanego miesiąca.
+- `my ($sec, $min, $hour, $mday, $wday) = localtime($time);` - pobranie informacji o czasie z wykorzystaniem funkcji `localtime()`. Zwrócone wartości to: sekundy, minuty, godziny, dzień miesiąca i dzień tygodnia (0 - niedziela, 1 - poniedziałek, itd.).
+- `$wday = ($wday + 6) % 7;` - ustalenie dnia tygodnia pierwszego dnia danego miesiąca. Dodanie 6 do wartości $wday zapewnia, że niedziela zostanie zmapowana na 0, ponieważ reszta z dzielenia przez 7 jest równa 0.
+- `my $last_day = (localtime(timelocal(0, 0, 0, 1, $month, $year - 1900) - 86400))[3];` - obliczenie ilości dni w danym miesiącu. Funkcja localtime() zwraca informacje o czasie w postaci tablicy, a `[3]` oznacza dzień miesiąca.
+- `print $cgi->header('text/html');` - wygenerowanie nagłówka HTTP.
+- `print "<html><body>\n";` - otwarcie znacznika <htmli <body>.
+- `print "<h1>Kalendarz dla $month/$year</h1>\n";` - wygenerowanie nagłówka z informacją o wyświetlanym miesiącu.
+- `print "<table border=\"1\">\n";` - otwarcie znacznika <tablez atrybutem `border="1"`.
+- `print "<th>Nd</th><th>Pn</th><th>Wt</th><th>Sr</th><th>Cz</th><th>Pt</th><th>So</th>\n";` - wygenerowanie nagłówków kolumn tabeli.
 
 3. Zmień uprawnienia na pliku `chmod 755 calendar.cgi`
 4. Przetestuj skrypt na adresie `http://localhost:8080/cgi-bin/calendar.cgi?month=4&year=2023`
@@ -328,11 +328,11 @@ print "<h1>Liczba odwiedzin: $count</h1>";
 print end_html();
 ```
 ### Wyjaśnienie
-> - W linijkach 3-4 dodane są dyrektywy `"use strict"` i `"use warnings"`, które wymuszają na skrypcie restrykcyjne podejście do deklarowania zmiennych i wykrywają ewentualne problemy związane z niepoprawnym użyciem funkcji, zmiennych itp.
-> - W linijce 6 zaimportowano moduł CGI oraz jego funkcje standardowe przy pomocy `qw(:standard)`.
-> - W linijkach 9-11 otwierany jest plik `"counter.txt"` i pobierana jest z niego wartość licznika, która zostaje zapisana do zmiennej `$count`.
-> - W linijkach 14-16 wartość $count zostaje zwiększona o 1 i zapisana do pliku `"counter.txt"`.
-> - W linijkach 19-21 wykorzystując funkcje standardowe modułu CGI, wyświetlana jest strona z wartością licznika z pliku `"counter.txt"`. Najpierw wyświetlany jest nagłówek strony (header), następnie jej początek (start_html), treść strony, a na końcu jej koniec (end_html).
+- W linijkach 3-4 dodane są dyrektywy `"use strict"` i `"use warnings"`, które wymuszają na skrypcie restrykcyjne podejście do deklarowania zmiennych i wykrywają ewentualne problemy związane z niepoprawnym użyciem funkcji, zmiennych itp.
+- W linijce 6 zaimportowano moduł CGI oraz jego funkcje standardowe przy pomocy `qw(:standard)`.
+- W linijkach 9-11 otwierany jest plik `"counter.txt"` i pobierana jest z niego wartość licznika, która zostaje zapisana do zmiennej `$count`.
+- W linijkach 14-16 wartość $count zostaje zwiększona o 1 i zapisana do pliku `"counter.txt"`.
+- W linijkach 19-21 wykorzystując funkcje standardowe modułu CGI, wyświetlana jest strona z wartością licznika z pliku `"counter.txt"`. Najpierw wyświetlany jest nagłówek strony (header), następnie jej początek (start_html), treść strony, a na końcu jej koniec (end_html).
 
 3. Zmień uprawnienia na pliku `chmod 755 counter.cgi`
 4. Przetestuj skrypt na adresie `http://localhost:8080/cgi-bin/counter.cgi`
@@ -356,7 +356,7 @@ my $filename = param('filename');
 
 # Otwórz plik i odczytaj jego zawartość
 open(my $fh, '<', $filename) or die "Nie można otworzyć pliku '$filename': $!";
-my $content = do { local $/; <$fh> };
+my $content = do { local $/; <$fh};
 close($fh);
 
 # Wyświetl zawartość pliku
