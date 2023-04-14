@@ -370,3 +370,62 @@ print end_html();
 3. Stwórz plik tekstowy z losową zawartością, nazwij go `plik.txt`
 4. Zmień uprawnienia dla pliku korzystając z komeny `chmod 755 display_file.cgi`
 5. Przetestuj skrypt, wchodząc na stronę: `http://localhost:8080/cgi-bin/display_file.cgi?filename=plik.txt`
+
+
+# Kolokwium
+
+## Zadanie 3.0
+Napisać skrypt CGI wypisujący sumę wartości parametrów podanych w linii adresu. Np. dla wywołania `http://localhost/cgi-bin/skrypt.cgi?1+2+3+4+5`, skrypt powinien wyświetlić 15.
+### Uruchamianie CGI
+1. Dodać linijkę (odkomentować) `LoadModule cgid_module modules/mod_cgid.so` w pliku konfiguracyjnym serwera Apache `httpd.conf`.
+
+2. Odkomentuj dyrektywę `AddHandler cgi-script .cgi .pl`, która określi, jakie typy plików będą traktowane jako skrypty CGI w pliku konfiguracyjnym serwera Apache `httpd.conf`.
+
+3. Odkomentuj dyrektywę `<Directory "/tmp/$USER/httpd/cgi-bin">`  w pliku konfiguracyjnym serwera Apache `httpd.conf` oraz dodaj w niej fragment kodu:
+```
+<Directory "/tmp/lenovo/httpd/cgi-bin">
+    AllowOverride None
+    Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+    Require all granted
+</Directory>
+```
+### Testowanie skryptu
+1. Stworzyć `skrypt.cgi` i dodać analogiczny kod:
+```
+#!/usr/bin/perl -wT 
+
+use strict;
+use warnings;
+use CGI qw(:standard);
+
+print header();
+print start_html();
+
+my $query = CGI->new();
+my @params = $query->param();
+my $sum = 0;
+
+foreach my $param (@params) {
+    my @values = $query->param($param);
+    foreach my $value (@values) {
+        $sum += $value;
+    }
+}
+
+print "<h1>Suma wartosci parametrow: $sum</h1>";
+print end_html();
+```
+2. Zmienić uprawnienia użytkowników dla pliku za pomocą komendy `chmod 755 skrypt.cgi`
+3. Przetestować skrypt, wchodząc w adres: `http://localhost:8080/cgi-bin/skrypt.cgi?1+2+3+4+5`
+
+### Wyjaśnienie
+- W pierwszych trzech liniach skryptu dołączane są wymagane moduły i uruchamiane są tryby `strict` oraz `warnings`.
+- Wiersz `print header()` generuje nagłówek odpowiedzi HTTP, który zawiera informacje o typie MIME zwracanej strony, w tym przypadku jest to text/html.
+- Wiersz print `start_html()` generuje początek strony HTML.
+- Tworzony jest nowy obiekt klasy CGI, który przechwytuje parametry przekazywane przez metodę GET z linii adresu.
+- Zmiennej `@params` przypisywana jest lista parametrów z zapytania.
+- Zmienna `$sum` jest ustawiana na początkową wartość 0.
+- Przez pętlę foreach iterujemy po parametrach i dodajemy wartości przekazane do `$sum`.
+- Na końcu wyświetlana jest wartość sumy wraz z odpowiednim tekstem.
+- Ostatnia linia, `print end_html()`, zamyka kod HTML i kończy stronę.
+
