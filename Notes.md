@@ -124,24 +124,64 @@ Napisać skrypt CGI wypisujący argumenty z linii poleceń.
 ### Uruchamianie CGI
 1. Dodać linijkę (odkomentować) `LoadModule cgid_module modules/mod_cgid.so` w pliku konfiguracyjnym serwera Apache `httpd.conf`.
 
-2. Odkomentuj dyrektywę `AddHandler cgi-script .cgi .pl`, która określi, jakie typy plików będą traktowane jako skrypty CGI.
+2. Odkomentuj dyrektywę `AddHandler cgi-script .cgi .pl`, która określi, jakie typy plików będą traktowane jako skrypty CGI w pliku konfiguracyjnym serwera Apache `httpd.conf`.
 
-3. Stworzyć plik tekstowy w formacie `.cgi` i dodać analogiczny kod:
+3. Odkomentuj dyrektywę `<Directory "/tmp/$USER/httpd/cgi-bin">`  w pliku konfiguracyjnym serwera Apache `httpd.conf` oraz dodaj w niej fragment kodu:
 ```
-#!/usr/bin/perl
+<Directory "/tmp/lenovo/httpd/cgi-bin">
+    AllowOverride None
+    Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+    Require all granted
+</Directory>
+```
+### Testowanie skryptu
+1. Stworzyć skrypt w formacie `.cgi` i dodać analogiczny kod:
+```
+#!/usr/bin/perl -wT 
 
 use CGI;
 
 # Utwórz nowy obiekt CGI
 my $cgi = CGI->new();
 
-# Pobierz argumenty z linii poleceń
-my @args = @ARGV;
+# Pobierz argumenty z linii poleceń z parametrów CGI
+my @args = $cgi->param();
 
 # Wypisz argumenty
-print $cgi->header('text/plain');
+print $cgi->header('text/html');
+print "<html><body>\n";
 foreach my $arg (@args) {
-  print "$arg\n";
+  print "$arg: " . $cgi->param($arg) . "<br>\n";
 }
+print "</body></html>\n";
 ``` 
-4. Przetestuj działanie skryptu na adresie `http://localhost:8080/katalog4/skrypt.cgi?argument1=Hello&argument2=World`
+2. Przetestuj działanie skryptu, uruchamiając go `./var.cgi` oraz na adresie `http://localhost:8080/cgi-bin/var.cgi?arg1=foo&arg2=bar`
+
+## Zadanie 2
+---
+Napisać skrypt CGI wypisujący argumenty z linii poleceń.
+Napisać skrypt CGI, który wyświetla wszystkie liczby całkowite od 1 do N. N jest
+przekazywane do skryptu poprzez linię adresu.
+
+1. Wykonaj konfigurację CGI z powyższego zadania
+2. Stwórz skrypt `numbers.cgi`, analogicznie do tego przykladu:
+```
+#!/usr/bin/perl -wT 
+
+use CGI;
+
+# Utwórz nowy obiekt CGI
+my $cgi = CGI->new();
+
+# Pobierz wartość parametru "n" z linii adresu
+my $n = $cgi->param('n');
+
+# Wypisz liczby od 1 do n
+print $cgi->header('text/html');
+print "<html><body>\n";
+for (my $i = 1; $i <= $n; $i++) {
+  print "$i<br>\n";
+}
+print "</body></html>\n";
+```
+3. Przetestuj skrypt na adresie: `http://localhost:8080/cgi-bin/numbers.cgi?n=30`
