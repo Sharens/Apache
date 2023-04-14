@@ -167,7 +167,7 @@ przekazywane do skryptu poprzez linię adresu.
 
 1. Wykonaj konfigurację CGI z powyższego zadania
 2. Stwórz skrypt `numbers.cgi`, analogicznie do tego przykladu:
-```
+```perl
 #!/usr/bin/perl -wT 
 
 use CGI;
@@ -229,7 +229,7 @@ Dni miesiąca umieścić w odpowiedniej tabelki.
 
 1. Wykonaj konfigurację CGI z pierwszego zadania
 2. Stwórz skrypt `calendar.cgi`, analogicznie do tego przykladu:
-```
+```perl
 #!/usr/bin/perl -wT 
 
 use CGI;
@@ -302,7 +302,7 @@ Napisać skrypt CGI, który wyświetla liczbę odwiedzin
 
 1. Wykonaj konfigurację CGI z pierwszego zadania
 2. Stwórz skrypt `counter.cgi`, analogicznie do tego przykladu:
-```
+```perl
 #!/usr/bin/perl -wT 
 
 use strict;
@@ -344,7 +344,7 @@ poprzez linie adresu.
 
 1. Wykonaj konfigurację CGI z pierwszego zadania
 2. Stwórz skrypt `display_file.cgi`, analogicznie do tego przykladu:
-```
+```perl
 #!/usr/bin/perl -wT 
 
 use strict;
@@ -375,6 +375,7 @@ print end_html();
 # Kolokwium
 
 ## Zadanie 3.0
+----
 Napisać skrypt CGI wypisujący sumę wartości parametrów podanych w linii adresu. Np. dla wywołania `http://localhost/cgi-bin/skrypt.cgi?1+2+3+4+5`, skrypt powinien wyświetlić 15.
 ### Uruchamianie CGI
 1. Dodać linijkę (odkomentować) `LoadModule cgid_module modules/mod_cgid.so` w pliku konfiguracyjnym serwera Apache `httpd.conf`.
@@ -391,7 +392,7 @@ Napisać skrypt CGI wypisujący sumę wartości parametrów podanych w linii adr
 ```
 ### Testowanie skryptu
 1. Stworzyć `skrypt.cgi` i dodać analogiczny kod:
-```
+```perl
 #!/usr/bin/perl -wT 
 
 use strict;
@@ -429,3 +430,86 @@ print end_html();
 - Na końcu wyświetlana jest wartość sumy wraz z odpowiednim tekstem.
 - Ostatnia linia, `print end_html()`, zamyka kod HTML i kończy stronę.
 
+
+## Zadanie 4.0
+----
+Napisz formularz ankiety oraz odpowiedni skrypt CGI zbierający wprowadzone dane do pliku tekstowego na serwerze. Formularz powinien zawierać: pole tekstowe Imię, pole tekstowe Nazwisko, pole numeryczne wiek (o rozmiarze 3 znaków), przyciski radiowe określajace płeć, przyciski wysłania (Wyślij) i czyszczenia (Wyczyść) formularza. Każdy wiersz pliku zawiera wartości pól formularza z danego wypełnienia/ wysłania rozdzielone dwukropkiem
+
+1. Dodaj dyrektywę `Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch` na uruchamianie skryptów CGI na katalogu `htdocs` w pliku `httpd.conf`
+```
+DocumentRoot "/tmp/lenovo/httpd/htdocs"
+<Directory "/tmp/lenovo/httpd/htdocs">
+    Options Indexes FollowSymLinks
+    Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+    AllowOverride All
+    Require all granted
+</Directory>
+```
+2. W folderze `htdocs` stwórz plik `index.html`, analogicznie do poniższego:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Ankieta</title>
+</head>
+<body>
+	<h1>Ankieta</h1>
+	<form action="skrypt.cgi" method="post">
+		<label for="imie">Imię:</label>
+		<input type="text" id="imie" name="imie" required><br>
+		<label for="nazwisko">Nazwisko:</label>
+		<input type="text" id="nazwisko" name="nazwisko" required><br>
+		<label for="wiek">Wiek:</label>
+		<input type="number" id="wiek" name="wiek" min="1" max="999" required><br>
+		<label>Płeć:</label><br>
+		<input type="radio" id="mezczyzna" name="plec" value="mężczyzna" required>
+		<label for="mezczyzna">Mężczyzna</label><br>
+		<input type="radio" id="kobieta" name="plec" value="kobieta" required>
+		<label for="kobieta">Kobieta</label><br>
+		<input type="submit" value="Wyślij">
+		<input type="reset" value="Wyczyść">
+	</form>
+</body>
+</html>
+```
+3. W folderze `htdocs`, stwórz `skrypt.cgi`, analogicznie do poniższego kodu:
+```perl
+#!/usr/bin/perl -wT 
+
+use strict;
+use warnings;
+use CGI qw(:standard);
+
+# Pobierz wartości pól formularza
+my $imie = param('imie');
+my $nazwisko = param('nazwisko');
+my $wiek = param('wiek');
+my $plec = param('plec');
+
+# Otwórz plik tekstowy do zapisu
+my $file = 'ankieta.txt';
+open(my $fh, '>>', $file) or die "Nie można otworzyć pliku '$file': $!";
+
+# Zapisz wartości pól formularza do pliku
+print $fh "$imie:$nazwisko:$wiek:$plec\n";
+close($fh);
+
+# Wyświetl stronę z komunikatem o udanym wysłaniu formularza
+print header();
+print start_html();
+print "<h1>Ankieta zostala wyslana</h1>";
+print "<p>Dziekujemy za wypelnienie ankiety!</p>";
+print end_html();
+```
+4. Dla obu plików nadaj uprawnienia modyfikacji `chmod 755`
+5. Przetestuj skrypt wchodząc na adres `http://localhost:8080/skrypt.cgi`
+
+### Wyjaśnienie
+- Mamy trzy instrukcje `use`, które importują moduły do skryptu. strict sprawia, że ​​wszystkie zmienne muszą być zadeklarowane, a warnings powoduje wyświetlanie ostrzeżeń podczas wykonywania skryptu. `CGI qw(:standard)` importuje podstawowe funkcje CGI, które umożliwiają pobieranie wartości z formularza i generowanie kodu HTML.
+
+- Zmienne `$imie`, `$nazwisko`, `$wiek` i `$plec` zawierają wartości pól formularza pobrane przy pomocy funkcji `param()`.
+
+- Następnie skrypt otwiera plik tekstowy ankieta.txt w trybie dołączania `('>>')` i zapisuje wartości pól formularza do pliku w formacie `imie:nazwisko:wiek:plec`. Jeśli otwarcie pliku zakończy się niepowodzeniem, skrypt wyświetli błąd i zakończy działanie.
+
+- Po zapisaniu danych do pliku skrypt generuje kod HTML, który wyświetli komunikat o udanym wysłaniu formularza. Funkcja `header()` generuje nagłówek strony, a funkcje `start_html()` i `end_html()` generują początek i koniec strony HTML, a między nimi umieszczony jest komunikat.
