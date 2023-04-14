@@ -137,7 +137,7 @@ Napisać skrypt CGI wypisujący argumenty z linii poleceń.
 ```
 ### Testowanie skryptu
 1. Stworzyć skrypt w formacie `.cgi` i dodać analogiczny kod:
-```
+```perl
 #!/usr/bin/perl -wT 
 
 use CGI;
