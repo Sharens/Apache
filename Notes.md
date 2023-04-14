@@ -577,3 +577,20 @@ print end_form();
 print end_html();
 ```
 2. Sprawdź działanie skryptu, wchodząc na adres `http://localhost:8080/skrypt.cgi`
+	
+### Wyjaśnienie
+- Na początku skryptu znajduje się deklaracja interpretatora `#!/usr/bin/perl -wT`, który określa ścieżkę do interpretera Perl oraz włącza opcje `-w` i `-T` dla trybu ostrzeżenia i bezpieczeństwa.
+
+- Następnie zaimportowane są moduły `strict`, `warnings` i `CGI`, które zapewniają ścisłe typowanie zmiennych, ostrzeżenia o potencjalnych błędach i dostęp do narzędzi do obsługi żądań CGI.
+
+- Skrypt pobiera wartości pól formularza `($imie, $nazwisko, $wiek, $plec)` za pomocą funkcji param() z modułu CGI.
+
+- Następnie skrypt sprawdza, czy istnieją dane z poprzedniego wypełnienia formularza w ciasteczkach przeglądarki `($cookie_imie, $cookie_nazwisko, $cookie_wiek, $cookie_plec)`. Jeśli tak, to wartości pól formularza są nadpisywane tymi z ciasteczek.
+
+- Skrypt otwiera plik tekstowy `ankieta.txt` w trybie dopisywania i zapisuje wartości pól formularza do pliku.
+
+- Następnie skrypt ustawia ciasteczka z wartościami pól formularza za pomocą funkcji `header()` z modułu CGI.
+
+- Skrypt wyświetla formularz HTML, używając funkcji z modułu CGI, takich jak `start_html()`, `start_form()`, `textfield()`, `radio_group()` i `submit()`. Formularz ma pola dla imienia, nazwiska, wieku i płci, a także przycisk do wysyłania danych.
+
+- Skrypt wyświetla również link, który pozwala wypełnić pola formularza danymi z ciasteczek.
