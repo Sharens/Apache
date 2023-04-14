@@ -513,3 +513,7 @@ print end_html();
 - Następnie skrypt otwiera plik tekstowy ankieta.txt w trybie dołączania `('>>')` i zapisuje wartości pól formularza do pliku w formacie `imie:nazwisko:wiek:plec`. Jeśli otwarcie pliku zakończy się niepowodzeniem, skrypt wyświetli błąd i zakończy działanie.
 
 - Po zapisaniu danych do pliku skrypt generuje kod HTML, który wyświetli komunikat o udanym wysłaniu formularza. Funkcja `header()` generuje nagłówek strony, a funkcje `start_html()` i `end_html()` generują początek i koniec strony HTML, a między nimi umieszczony jest komunikat.
+
+## Zadanie 5.0
+---
+Rozbudować powyższy (na 4.0) skrypt o możliwość przechowywania ostatnich wprowadzonych danych w ciasteczkach i możliwość wypełniania na żądanie (linkiem wypełnij) pól formularza danymi z ciasteczek.
