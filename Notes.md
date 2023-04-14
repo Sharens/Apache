@@ -517,3 +517,63 @@ print end_html();
 ## Zadanie 5.0
 ---
 Rozbudować powyższy (na 4.0) skrypt o możliwość przechowywania ostatnich wprowadzonych danych w ciasteczkach i możliwość wypełniania na żądanie (linkiem wypełnij) pól formularza danymi z ciasteczek.
+
+1. Otwórz `skrypt.cgi`, i przekształć go analogicznie do poniższego skryptu:
+```perl
+#!/usr/bin/perl -wT 
+
+use strict;
+use warnings;
+use CGI qw(:standard);
+
+
+# Pobierz wartości pól formularza
+my $imie = param('imie');
+my $nazwisko = param('nazwisko');
+my $wiek = param('wiek');
+my $plec = param('plec');
+
+# Pobierz wartości z ciasteczek, jeśli istnieją
+my $cookie_imie = cookie('imie');
+my $cookie_nazwisko = cookie('nazwisko');
+my $cookie_wiek = cookie('wiek');
+my $cookie_plec = cookie('plec');
+
+#Jeśli dane w ciasteczkach istnieją, nadpisz wartości pól formularza
+if ($cookie_imie && $cookie_nazwisko && $cookie_wiek && $cookie_plec) {
+$imie ||= $cookie_imie;
+$nazwisko ||= $cookie_nazwisko;
+$wiek ||= $cookie_wiek;
+$plec ||= $cookie_plec;
+}
+
+#Otwórz plik tekstowy do zapisu
+my $file = 'ankieta.txt';
+open(my $fh, '>>', $file) or die "Nie można otworzyć pliku '$file': $!";
+
+#Zapisz wartości pól formularza do pliku
+print $fh "$imie:$nazwisko:$wiek:$plec\n";
+close($fh);
+
+#Ustaw ciasteczka z wartościami pól formularza
+print header(-cookie => [
+cookie(-name => 'imie', -value => $imie),
+cookie(-name => 'nazwisko', -value => $nazwisko),
+cookie(-name => 'wiek', -value => $wiek),
+cookie(-name => 'plec', -value => $plec),
+]);
+
+#Wyświetl formularz wraz z pobranymi wartościami
+print start_html();
+print "<h1>Ankieta</h1>";
+print start_form();
+print "Imie: ",textfield(-name=>'imie', -value=>$imie),"<br/>";
+print "Nazwisko: ",textfield(-name=>'nazwisko', -value=>$nazwisko),"<br/>";
+print "Wiek: ",textfield(-name=>'wiek', -value=>$wiek),"<br/>";
+print "Plec: ",radio_group(-name=>'plec', -values=>['Kobieta','Mezczyzna'], -default=>$plec),"<br/>";
+print submit(-name=>'submit', -value=>'Wyslij'), "<br/>";
+print "<a href='?$ENV{QUERY_STRING}'>Wypelnij danymi z ciasteczek</a>";
+print end_form();
+print end_html();
+```
+2. Sprawdź działanie skryptu, wchodząc na adres `http://localhost:8080/skrypt.cgi`
