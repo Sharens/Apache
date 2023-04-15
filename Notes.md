@@ -1,3 +1,30 @@
+# Uruchamianie Apache
+1. Wykonujemy poniższe komendy:
+```bash
+mkdir /tmp/$USER
+cd  /tmp/$USER
+tar jxvf /nfs/darin/pub/prog/httpd-2.4.41.tar.bz2
+cd httpd-2.4.41
+./configure --prefix=/tmp/$USER/httpd --with-port=8080 
+make
+make install
+cd ..
+rm -rf httpd-2.4.41
+rm -rf /tmp/$USER/httpd/manual
+strip /tmp/$USER/httpd/bin/*
+```
+
+2. Uruchamiamy serwer Apache:
+```bash
+  /tmp/$USER/httpd/bin/apachectl start
+```
+3. Celem przetestowania należy uruchomić przeglądarkę i wpisać adres `http://localhost:8080/`. W przypadku zdalnego dostępu do pracowni komputerowej zamiast localhost należy wpisać adres IP przydzielonego komputera w sali.
+
+4. Po każdej modyfikacji plików, należy pamiętać o restarcie serwera komendą 
+```bash
+/tmp/$USER/httpd/bin/apachectl restart
+```
+
 # Sprawozdanie #1
 
 ## Zadanie 1
@@ -371,6 +398,310 @@ print end_html();
 4. Zmień uprawnienia dla pliku korzystając z komeny `chmod 755 display_file.cgi`
 5. Przetestuj skrypt, wchodząc na stronę: `http://localhost:8080/cgi-bin/display_file.cgi?filename=plik.txt`
 
+
+# Sprawozdanie #3
+## Zadanie 1
+---
+Napisać skrypt CGI w języku Perl, który
+wyświetli nazwy i wartości wszystkich pól dowolnego formularza przekazanych do skryptu.
+Skrypt powinien działać poprawnie niezależnie od metody wysyłania danych z formularza -
+GET lub POST.
+
+1. Tworzymy w htdocs nowy katalog, przykładowo katalog5 za pomocą komendy `mkdir katalog5`
+2. Tworzymy w nim plik `skrypt.cgi` za pomocą komendy `touch`, oraz zamieszczamy w nim skrypt analogiczny do poniższego:
+```perl
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use CGI;
+
+# Tworzenie nowego obiektu CGI
+my $cgi = new CGI;
+
+# Pobranie metody przekazywania danych (GET lub POST)
+my $method = $cgi->request_method();
+
+# Wyświetlenie nagłówka Content-type
+print $cgi->header();
+
+# Sprawdzenie, czy dane formularza zostały przesłane
+if ($method eq 'POST' || $cgi->param()) {
+
+    # Pobranie wszystkich parametrów formularza i ich wartości
+    my @params = $cgi->param();
+
+    foreach my $param (@params) {
+        my @values = $cgi->param($param);
+        foreach my $value (@values) {
+            print "$param: $value\n";
+        }
+    }
+}
+else {
+    print "Nie przeslano zadnych danych formularza.\n";
+}
+```
+3. Następnie tworzymy w nim plik `formularz.html` za pomocą komendy `touch`, i tworzymy w nim kod analogiczny do poniższego:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Formularz</title>
+</head>
+<body>
+	<form action="skrypt.cgi" method="post">
+		<label for="imie">Imię:</label>
+		<input type="text" name="imie" id="imie"><br>
+		<label for="nazwisko">Nazwisko:</label>
+		<input type="text" name="nazwisko" id="nazwisko"><br>
+		<label for="email">E-mail:</label>
+		<input type="email" name="email" id="email"><br>
+		<input type="submit" value="Wyślij">
+	</form>
+</body>
+</html>
+``` 
+4. Jeżeli chcemy zmienić metodę na `GET`, zmieniamy linijkę `form action="skrypt.cgi" method="get">`
+5. Dla obu plików zmieniamy uprawnienia użytkowników za pomocą komendy `chmod 755 <nazwa_pliku>`
+6. Testujemy formularz wchodząc na adres `http://localhost:8080/katalog5/formularz.html`
+
+
+## Zadanie 2
+---
+Napisać skrypt CGI w języku Perl, który zapisuje dane z formularza do pliku. Pola
+formularza: imie, nazwisko, płeć(przyciski radio), rok urodzenia. Do pliku zapisywane są
+linie (rekordy). Pola rekordu rozdzielone są znakiem ':'.
+
+1. Tworzymy w htdocs nowy katalog, przykładowo katalog6 za pomocą komendy `mkdir katalog6`
+2. Tworzymy w nim plik `skrypt.cgi` za pomocą komendy `touch`, oraz zamieszczamy w nim skrypt analogiczny do poniższego:
+```perl
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use CGI;
+
+my $cgi = CGI->new;
+
+# Otwieramy plik do zapisu danych
+open my $fh, '>>', 'dane.txt' or die "Nie można otworzyć pliku: $!";
+
+# Pobieramy wartości pól formularza
+my $imie = $cgi->param('imie') || '';
+my $nazwisko = $cgi->param('nazwisko') || '';
+my $plec = $cgi->param('plec') || '';
+my $rok_urodzenia = $cgi->param('rok_urodzenia') || '';
+
+# Zapisujemy dane do pliku, oddzielając pola znakiem ':'
+print $fh "$imie:$nazwisko:$plec:$rok_urodzenia\n";
+
+# Zamykamy plik
+close $fh;
+
+# Wyświetlamy komunikat o zapisaniu danych
+print $cgi->header('text/plain'),
+      "Dane zostaly zapisane do pliku dane.txt\n";
+```
+3. Następnie tworzymy w nim plik `formularz.html` za pomocą komendy `touch`, i tworzymy w nim kod analogiczny do poniższego:
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Formularz zapisujący dane</title>
+  </head>
+  <body>
+    <h1>Formularz zapisujący dane</h1>
+    <form action="skrypt.cgi" method="POST">
+      <p>
+        <label for="imie">Imię:</label>
+        <input type="text" name="imie" required>
+      </p>
+      <p>
+        <label for="nazwisko">Nazwisko:</label>
+        <input type="text" name="nazwisko" required>
+      </p>
+      <p>
+        Płeć:
+        <label><input type="radio" name="plec" value="k" checked> Kobieta</label>
+        <label><input type="radio" name="plec" value="m"> Mężczyzna</label>
+      </p>
+      <p>
+        <label for="rok_urodzenia">Rok urodzenia:</label>
+        <input type="number" name="rok_urodzenia" required>
+      </p>
+      <button type="submit">Zapisz</button>
+    </form>
+  </body>
+</html>
+```
+4. Dla obu plików zmieniamy uprawnienia użytkowników za pomocą komendy `chmod 755 <nazwa_pliku>`
+5. Testujemy formularz wchodząc na adres `http://localhost:8080/katalog6/formularz.html`
+
+## Zadanie 3
+---
+Napisać script CGI umożliwiający zapis (upload) plików graficznych do katalogu na
+serwerze oraz wyświetlanie wszystkich zapisanych plików. 
+
+1. Tworzymy w htdocs nowy katalog, przykładowo katalog7 za pomocą komendy `mkdir katalog7`, a w nim katalog `uploads` za pomocą komendy `mkdir uploads`
+2. Tworzymy w nim plik `skrypt.cgi` za pomocą komendy `touch`, oraz zamieszczamy w nim skrypt analogiczny do poniższego:
+```perl
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use CGI qw(:standard);
+use File::Basename;
+
+# Ustawiamy sciezkę do katalogu, w ktorym będa przechowywane pliki graficzne
+my $upload_dir = '/tmp/$USER/httpd/htdocs/katalog7/uploads';
+
+# Jesli formularz zostal przeslany
+if (param('submit')) {
+    # Pobieramy informacje o przeslanym pliku
+    my $file = param('plik');
+    my $filename = basename($file);
+    my $upload_filehandle = upload('plik');
+
+    # Sprawdzamy, czy nazwa pliku nie jest pusta
+    if (!$filename) {
+        print header('text/html'),
+              start_html('Blad'),
+              h1('Blad'),
+              p('Nie wybrano pliku.'),
+              end_html;
+        exit;
+    }
+
+    # Tworzymy sciezkę do zapisania pliku
+    my $upload_path = "$upload_dir/$filename";
+
+    # Zapisujemy plik w katalogu na serwerze
+    open my $fh, '>', $upload_path or die "Nie mozna zapisac pliku: $!";
+    while (my $bytesread = read($upload_filehandle, my $buffer, 1024)) {
+        print $fh $buffer;
+    }
+    close $fh;
+
+    # Wyswietlamy komunikat o zapisaniu pliku
+    print header('text/html'),
+          start_html('Plik przeslany'),
+          h1('Plik przeslany'),
+          p("Plik $filename zostal przeslany i zapisany w katalogu $upload_dir."),
+          end_html;
+} else {
+    # Wyswietlamy formularz do przesylania pliku
+    print header('text/html'),
+          start_html('Przesylanie plikow'),
+          h1('Przesylanie plikow'),
+          start_form(-enctype => 'multipart/form-data'),
+          "Wybierz plik do przeslania:",
+          br,
+          filefield(-name => 'plik'),
+          br,
+          submit(-name => 'submit', -value => 'Przeslij plik'),
+          end_form,
+          end_html;
+
+    # Wyswietlamy listę zapisanych plikow
+    my @files = glob("$upload_dir/*");
+    if (@files) {
+        print "<h2>Lista zapisanych plikow:</h2><ul>\n";
+        foreach my $file (@files) {
+            my $filename = basename($file);
+            print "<li><a href=\"/uploads/$filename\">$filename</a></li>\n";
+        }
+        print "</ul>\n";
+    }
+}
+```
+4. Dla pliku nadajemy uprawnienia do edycji `chmod 775 uploads` a dla skryptu uprawnienia do czytania za pomocą komendy `chmod 755 skrypt.cgi`
+5. Testujemy formularz wchodząc na adres `http://localhost:8080/katalog7/skrypt.cgi`
+
+
+## Zadanie 4
+----
+Napisać skrypt CGI w Perlu udostępniający określoną zawartość dopiero po zalogowaniu się.
+W przypadku ponownej próby dostępu do tej samej zawartości w czasie krótszym niż 60
+sekund z tej samej przeglądarki nie ma potrzeby ponownego wprowadzania hasła. W
+przeciwnym przypadku należy ponownie wprowadzić hasło.
+
+1. Tworzymy w htdocs nowy katalog, przykładowo katalog8 za pomocą komendy `mkdir katalog8`, a w nim plik `hasla.txt` za pomocą komendy `touch hasla.txt`
+2. Tworzymy w nim plik `skrypt.cgi` za pomocą komendy `touch`, oraz zamieszczamy w nim skrypt analogiczny do poniższego:
+```perl
+#!/usr/bin/perl
+use strict;
+use CGI qw/:standard/;
+use CGI::Session;
+use Digest::MD5 qw/md5_hex/;
+
+# okresl nazwę pliku z haslami i zapisz hasla uzytkownikow
+my $filename = "/tmp/lenovo/httpd/htdocs/katalog8/hasla.txt";
+my %hasla = ();
+open(my $fh, "<", $filename) or die "Nie udalo się otworzyc pliku z haslami: $!";
+while (my $line = <$fh>) {
+    chomp $line;
+    my ($user, $pass) = split /:/, $line;
+    $hasla{$user} = $pass;
+}
+close($fh);
+
+# inicjuj sesję
+my $session = CGI::Session->new();
+my $haslo = $session->param('haslo');
+my $user = $session->param('user');
+my $timestamp = $session->param('timestamp') || 0;
+my $loggedin = 0;
+
+# jesli sesja nie jest zainicjowana, wyswietl formularz logowania
+if (!$haslo || !$user || (time - $timestamp > 60)) {
+    print header(),
+        start_html(-title=>'Logowanie'),
+        h1('Logowanie'),
+        start_form(),
+        "Login: ", textfield(-name=>'user'), br(),
+        "Haslo: ", password_field(-name=>'haslo'), br(),
+        submit(-name=>'submit', -value=>'Zaloguj'), end_form(),
+        end_html();
+} else {
+    $loggedin = 1;
+}
+
+# jesli uzytkownik zalogowany, wyswietl zawartosc strony
+if ($loggedin) {
+    print header(),
+        start_html(-title=>'Tajna zawartosc'),
+        h1('Tajna zawartosc'),
+        p("Witaj, $user! Oto tajna zawartosc."),
+        end_html();
+} elsif (param('submit')) {
+    # jesli uzytkownik wyslal formularz, sprawdz haslo i zaloguj
+    my $user = param('user');
+    my $haslo = param('haslo');
+    if (exists $hasla{$user} && $hasla{$user} eq md5_hex($haslo)) {
+        $session->param('haslo', md5_hex($haslo));
+        $session->param('user', $user);
+        $session->param('timestamp', time);
+        print redirect(-uri=>'skrypt.cgi');
+    } else {
+        print header(),
+            start_html(-title=>'Blad logowania'),
+            h1('Blad logowania'),
+            p("Niepoprawny login lub haslo."),
+            end_html();
+    }
+}
+```
+3. Login i hasło powinny być zapisane w pliku tekstowym w ten sposób:
+```
+login:haslo
+```
+4. Dla obu plików zmieniamy uprawnienia użytkowników za pomocą komendy `chmod 755 <nazwa_pliku>`
+5. Testujemy formularz wchodząc na adres `http://localhost:8080/katalog8/skrypt.cgi`
 
 # Kolokwium
 
