@@ -60,37 +60,47 @@ Linki źródłowe:
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Rejestracja nowego użytkownika</title>
+    <title>Formularz rejestracyjny</title>
 </head>
 <body>
-  <h1>Rejestracja nowego użytkownika</h1>
-  <form method="POST" action="formularz.php">
-    <label for="name">Imię:</label>
-    <input type="text" name="name" id="name" required><br><br>
-    <label for="email">Email:</label>
-    <input type="email" name="email" id="email" required><br><br>
-    <label for="password">Hasło:</label>
-    <input type="password" name="password" id="password" required><br><br>
-    <input type="submit" value="Zarejestruj">
-  </form>
+    <h2>Formularz rejestracyjny</h2>
+    <form action="formularz.php" method="post">
+        <label for="username">Nazwa uzytkownika:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="email">Adres email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="password">Haslo:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <input type="submit" value="Zarejestruj">
+    </form>
 </body>
 </html>
 ```
 2. W tym samym katalogu utwórz plik `formularz.php` z analogicznym kodem
 ```php
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $name = $_POST['name'];
-  $email = $_POST['email'];
-  $password = $_POST['password'];
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rejestracja - Potwierdzenie danych</title>
+</head>
+<body>
+    <h2>Potwierdzenie danych rejestracyjnych</h2>
 
-  echo "<h1>Przyjęte dane:</h1>";
-  echo "<p>Imię: $name</p>";
-  echo "<p>Email: $email</p>";
-  echo "<p>Hasło: $password</p>";
-} else {
-  echo "<h1>Błąd: Nieprawidłowy sposób żądania</h1>";
-}
+    <?php
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $username = $_POST["username"];
+        $email = $_POST["email"];
+        $password = $_POST["password"];
+
+        echo "<p>Nazwa uzytkownika: $username</p>";
+        echo "<p>Adres email: $email</p>";
+        echo "<p>Haslo: $password</p>";
+    }
+    ?>
+</body>
+</html>
 ?>
 ```
