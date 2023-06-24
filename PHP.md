@@ -2,6 +2,9 @@
 - Uruchamianie Apache \
 `/tmp/$USER/httpd/bin/apachectl start`
 
+- Restart Apache \
+`/tmp/$USER/httpd/bin/apachectl restart`
+
 # Instalacja PHP
 
 Wykonujemy poniższe komendy:
@@ -553,3 +556,266 @@ require_once 'dodajStudenta.php';
 ```
 3. Przetestuj działanie skryptów, otwierając adres \
 `http://localhost:8080/sprawozdanie_02/formularz_dodawania.php`
+
+## Zadanie 4
+--------------
+Napisać i przetestować funkcję w PHP do usuwania studentów. Selekcja studentów za pomocą
+"checkbox-ów".
+
+1. Stwórz plik `usuwanie_studentow.php`, i umieść w nim analogiczny kod
+```php
+<?php
+function usunStudentow($studentIds) {
+    // Połączenie z bazą danych SQLite
+    $db = new SQLite3('students.db');
+
+    // Przygotowanie zapytania DELETE
+    $query = "DELETE FROM student WHERE id IN (".implode(',', $studentIds).")";
+
+    // Wykonanie zapytania DELETE
+    $result = $db->exec($query);
+
+    // Zamknięcie połączenia z bazą danych
+    $db->close();
+
+    // Zwrócenie wyniku operacji (true/false)
+    return $result;
+}
+
+// Przykład użycia funkcji
+if (isset($_POST['submit'])) {
+    $selectedStudents = $_POST['students'];
+
+    if (usunStudentow($selectedStudents)) {
+        echo 'Usunięto zaznaczonych studentów z listy.';
+    } else {
+        echo 'Wystąpił błąd podczas usuwania studentów.';
+    }
+}
+
+// Wyświetlanie listy studentów z checkbox-ami
+function wyswietlListeStudentow() {
+    // Połączenie z bazą danych SQLite
+    $db = new SQLite3('students.db');
+
+    // Pobranie wszystkich studentów z bazy danych
+    $query = "SELECT * FROM student";
+    $result = $db->query($query);
+
+    // Wyświetlanie tabelki z listą studentów
+    echo '<form method="post" action="">';
+    echo '<table>';
+    echo '<tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Nr albumu</th><th>Zdjęcie</th><th>Usuń</th></tr>';
+
+    while ($row = $result->fetchArray()) {
+        $id = $row['id'];
+        $imie = $row['imie'];
+        $nazwisko = $row['nazwisko'];
+        $nr_albumu = $row['nr_albumu'];
+        $zdjecie = $row['zdjecie'];
+
+        echo '<tr>';
+        echo '<td>'.$id.'</td>';
+        echo '<td>'.$imie.'</td>';
+        echo '<td>'.$nazwisko.'</td>';
+        echo '<td>'.$nr_albumu.'</td>';
+        echo '<td>'.$zdjecie.'</td>';
+        echo '<td><input type="checkbox" name="students[]" value="'.$id.'"></td>';
+        echo '</tr>';
+    }
+
+    echo '</table>';
+    echo '<input type="submit" name="submit" value="Usuń zaznaczonych">';
+    echo '</form>';
+
+    // Zamknięcie połączenia z bazą danych
+    $db->close();
+}
+
+// Wywołanie funkcji do wyświetlenia listy studentów
+wyswietlListeStudentow();
+?>
+```
+2. Przetestuj działanie skryptu, poprzez wejście na adres `http://localhost:8080/sprawozdanie_02/usuwanie_studentow.php`
+
+## Zadanie 5
+--------------
+Napisać funkcję w PHP do zmiany/ustawiania hasła.
+
+1. Stwórz plik `nowe_haslo_form.php`, z analogicznym kodem
+
+```php
+<?php
+require_once 'funkcje_hasla.php';
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zmiana / usuwanie hasła</title>
+</head>
+<body>
+    <h1>Zmiana / usuwanie hasła</h1>
+
+    <form action="zmiana_hasla.php" method="post">
+        <label for="uzytkownikId">ID użytkownika:</label>
+        <input type="number" name="uzytkownikId" required>
+
+        <br><br>
+
+        <label for="noweHaslo">Nowe hasło:</label>
+        <input type="password" name="noweHaslo">
+
+        <br><br>
+
+        <input type="submit" name="zmienHaslo" value="Zmień hasło">
+        <input type="submit" name="usunHaslo" value="Usuń hasło">
+    </form>
+</body>
+</html>
+```
+
+2. Stwórz plik `zmiana_hasla.php` z analogicznym skryptem umożliwiającym zmiane haseł:
+```php
+<?php
+// Definiowanie wymaganych funkcji
+function zmienHaslo($studentId, $noweHaslo) {
+    // Połączenie z bazą danych SQLite
+    $db = new SQLite3('students.db');
+
+    // Sprawdzenie, czy student istnieje w bazie danych
+    $query = "SELECT * FROM student WHERE id = $studentId";
+    $result = $db->query($query);
+
+    if ($result->fetchArray()) {
+        // Zaszyfrowanie nowego hasła
+        $zaszyfrowaneHaslo = password_hash($noweHaslo, PASSWORD_DEFAULT);
+
+        // Aktualizacja hasła studenta w tabeli passwd
+        $query = "UPDATE passwd SET haslo = '$zaszyfrowaneHaslo' WHERE student_id = $studentId";
+        $db->exec($query);
+
+        // Zamknięcie połączenia z bazą danych
+        $db->close();
+
+        return true;
+    } else {
+        // Zamknięcie połączenia z bazą danych
+        $db->close();
+
+        return false;
+    }
+}
+
+function usunHaslo($studentId) {
+    // Połączenie z bazą danych SQLite
+    $db = new SQLite3('students.db');
+
+    // Sprawdzenie, czy student istnieje w bazie danych
+    $query = "SELECT * FROM student WHERE id = $studentId";
+    $result = $db->query($query);
+
+    if ($result->fetchArray()) {
+        // Usunięcie hasła studenta z tabeli passwd
+        $query = "DELETE FROM passwd WHERE student_id = $studentId";
+        $db->exec($query);
+
+        // Zamknięcie połączenia z bazą danych
+        $db->close();
+
+        return true;
+    } else {
+        // Zamknięcie połączenia z bazą danych
+        $db->close();
+
+        return false;
+    }
+}
+?>
+
+<?php
+if (isset($_POST['zmienHaslo'])) {
+    // Sprawdzenie czy został przesłany formularz zmiany hasła
+    $uzytkownikId = $_POST['uzytkownikId'];
+    $noweHaslo = $_POST['noweHaslo'];
+
+    if (zmienHaslo($uzytkownikId, $noweHaslo)) {
+        echo 'Hasło zostało zmienione dla użytkownika o ID '.$uzytkownikId.'.';
+    } else {
+        echo 'Użytkownik o podanym ID nie istnieje.';
+    }
+} elseif (isset($_POST['usunHaslo'])) {
+    // Sprawdzenie czy został przesłany formularz usunięcia hasła
+    $uzytkownikId = $_POST['uzytkownikId'];
+
+    if (usunHaslo($uzytkownikId)) {
+        echo 'Hasło zostało usunięte dla użytkownika o ID '.$uzytkownikId.'.';
+    } else {
+        echo 'Użytkownik o podanym ID nie istnieje.';
+    }
+}
+?>
+```
+3. Przetestuj działanie programu, wchodząc pod adres analogicznie do ścieżki pliku `http://localhost:8080/sprawozdanie_02/nowe_haslo_form.php`
+
+## Zadanie 6
+--------------
+Napisać program w PHP do sprawdzania loginu i hasła. Jeśli są poprawne zwraca id
+zalogowanego studenta.
+
+1. Stwórz plik `login_check.php`, i umieść w nim analogiczny kod
+```php
+<?php
+// Sprawdzenie, czy dane logowania zostały przesłane
+if (isset($_POST['nr_albumu']) && isset($_POST['haslo'])) {
+    // Pobranie danych logowania z formularza
+    $nr_albumu = $_POST['nr_albumu'];
+    $haslo = $_POST['haslo'];
+
+    // Połączenie z bazą danych
+    $db = new SQLite3('students.db');
+
+    // Zapytanie SQL w celu weryfikacji danych logowania
+    $query = "SELECT s.id FROM student s 
+              INNER JOIN passwd p ON s.id = p.student_id 
+              WHERE s.nr_albumu = :nr_albumu AND p.haslo = :haslo";
+
+    // Przygotowanie i wykonanie zapytania SQL z użyciem zabezpieczeń przed SQL Injection
+    $stmt = $db->prepare($query);
+    $stmt->bindValue(':nr_albumu', $nr_albumu, SQLITE3_TEXT);
+    $stmt->bindValue(':haslo', $haslo, SQLITE3_TEXT);
+    $result = $stmt->execute();
+
+    // Sprawdzenie, czy dane logowania są poprawne
+    if ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $studentId = $row['id'];
+        echo "Zalogowano studenta o ID: " . $studentId;
+    } else {
+        echo "Niepoprawne dane logowania.";
+    }
+
+    // Zamknięcie połączenia z bazą danych
+    $db->close();
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formularz logowania</title>
+</head>
+<body>
+    <h2>Formularz logowania</h2>
+    <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+        <label for="nr_albumu">Nr albumu:</label>
+        <input type="text" id="nr_albumu" name="nr_albumu" required>
+        <br>
+        <label for="haslo">Hasło:</label>
+        <input type="password" id="haslo" name="haslo" required>
+        <br>
+        <input type="submit" value="Zaloguj">
+    </form>
+</body>
+</html>
+```
+2. Przetestuj działanie programu, wchodząć na odpowiedni adres dostosowany do lokalizacji pliku. Przykładowo: `http://localhost:8080/sprawozdanie_02/login_check.php`
